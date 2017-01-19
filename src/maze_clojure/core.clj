@@ -26,7 +26,17 @@
     (if (pos? (count neighbors))
       (rand-nth neighbors)
       nil)))
+      
+(defn first-end? [rooms row col]
+  (< 1 (count (set (map :end? rooms)))))  
 
+;;(defn mark-end [rooms row col]
+;;  firstEnd (first-end? rooms row col)
+;;  (if firstEnd
+;;    (assoc-in rooms [row col :end?] true)
+;;    rooms))
+    
+       
 (defn tear-down-wall [rooms old-row old-col new-row new-col]
   (cond
     (< new-row old-row)
@@ -37,7 +47,7 @@
     (assoc-in rooms [new-row new-col :right?] false)
     (> new-col old-col)
     (assoc-in rooms [old-row old-col :right?] false)))
-
+    
 (declare create-maze)
 
 (defn create-maze-loop [rooms old-row old-col new-row new-col]
@@ -49,11 +59,18 @@
 
 (defn create-maze [rooms row col]
   (let [rooms (assoc-in rooms [row col :visited?] true)
+   ;;     rooms (if 
+   ;;             (and 
+   ;;                  (first-end? rooms row col)
+   ;;                  (not random-neighbor rooms row col)
+   ;;             (assoc-in rooms [row col :end?] true))
         next-room (random-neighbor rooms row col)]
     (if next-room
-          (create-maze-loop rooms row col (:row next-room)(:col next-room))
-          rooms)))
-    
+          (create-maze-loop rooms row col 
+            (:row next-room)(:col next-room)) rooms)))
+      ;;(if (first-end? rooms row col) (assoc-in rooms [row col :end?] true)))
+    ;;rooms))
+
 (defn -main []
   (let [rooms (create-rooms)
         rooms (create-maze rooms 0 0)
