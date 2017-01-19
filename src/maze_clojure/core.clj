@@ -27,15 +27,8 @@
       (rand-nth neighbors)
       nil)))
       
-(defn first-end? [rooms row col]
-  (< 1 (count (set (map :end? rooms)))))  
-
-;;(defn mark-end [rooms row col]
-;;  firstEnd (first-end? rooms row col)
-;;  (if firstEnd
-;;    (assoc-in rooms [row col :end?] true)
-;;    rooms))
-    
+(defn first-end? [rooms]
+  (= 1 (count (set (map :end? (flatten rooms))))))  
        
 (defn tear-down-wall [rooms old-row old-col new-row new-col]
   (cond
@@ -59,35 +52,32 @@
 
 (defn create-maze [rooms row col]
   (let [rooms (assoc-in rooms [row col :visited?] true)
-   ;;     rooms (if 
-   ;;             (and 
-   ;;                  (first-end? rooms row col)
-   ;;                  (not random-neighbor rooms row col)
-   ;;             (assoc-in rooms [row col :end?] true))
         next-room (random-neighbor rooms row col)]
     (if next-room
           (create-maze-loop rooms row col 
-            (:row next-room)(:col next-room)) rooms)))
-      ;;(if (first-end? rooms row col) (assoc-in rooms [row col :end?] true)))
-    ;;rooms))
+            (:row next-room)(:col next-room))
+      (if (first-end? rooms)(assoc-in rooms [row col :end?] true)
+        rooms))))
 
 (defn -main []
   (let [rooms (create-rooms)
-        rooms (create-maze rooms 0 0)
-        rooms (assoc-in rooms [0 0 :start?] true)]
+        rooms (assoc-in rooms [0 0 :start?] true)
+        rooms (create-maze rooms 0 0)]
     (doseq [_ rooms]
       (print " _"))
     (println)
     (doseq [row rooms]
       (print "|")
       (doseq [room row]
-        (if (:start? room)
+        (cond
+          (:start? room)
           (print "o")
-          (if (:end? room)
-            (print "x")
-            (if (:bottom? room)
-              (print "_")
-              (print " "))))
+          (:end? room)
+          (print "x")
+          :else
+          (if (:bottom? room)
+            (print "_")
+            (print " ")))
         (if (:right? room)
           (print "|")
           (print " ")))
